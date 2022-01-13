@@ -1,0 +1,16 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+metaflow = "*"
+
+[dev-packages]
+autopep8 = "*"
+flake8 = "*"
+ipython = "*"
+jedi = "*"
+
+[requires]
+python_version = "3.9"
