@@ -1,0 +1,235 @@
+* 実行例
+** help
+全体のhelp
+#+begin_src bash
+  % python house_price.py --help
+  Usage: house_price.py [OPTIONS] COMMAND [ARGS]...
+
+  Options:
+    --quiet / --not-quiet           Suppress unnecessary messages  [default:
+                                    not-quiet]
+    --metadata [local|service]      Metadata service type  [default: local]
+    --environment [local|conda]     Execution environment type  [default: local]
+    --datastore [local|s3]          Data backend type  [default: local]
+    --datastore-root TEXT           Root path for datastore
+    --package-suffixes TEXT         A comma-separated list of file suffixes to
+                                    include in the code package.  [default:
+                                    .py,.R,.RDS]
+    --with TEXT                     Add a decorator to all steps. You can
+                                    specify this option multiple times to attach
+                                    multiple decorators in steps.
+    --pylint / --no-pylint          Run Pylint on the flow if pylint is
+                                    installed.  [default: pylint]
+    --coverage                      Measure code coverage using coverage.py.
+                                    [default: False]
+    --event-logger [debugLogger|nullSidecarLogger]
+                                    type of event logger used  [default:
+                                    nullSidecarLogger]
+    --monitor [debugMonitor|nullSidecarMonitor]
+                                    Monitoring backend type  [default:
+                                    nullSidecarMonitor]
+    --help                          Show this message and exit.
+
+  Commands:
+    batch           Commands related to AWS Batch.
+    card            Commands related to @card decorator.
+    check           Check that the flow is valid (default).
+    dump            Get data artifacts of a task or all tasks in a step.
+    help            Show all available commands.
+    init            Internal command to initialize a run.
+    kubernetes      Commands related to Kubernetes on Amazon EKS.
+    logs            Show stdout/stderr produced by a task or all tasks in a...
+    output-dot      Visualize the flow with Graphviz.
+    output-raw      Output internal state of the flow graph.
+    package         Commands related to code packages.
+    resume          Resume execution of a previous run of this flow.
+    run             Run the workflow locally.
+    show            Show structure of the flow.
+    step            Internal command to execute a single task.
+    step-functions  Commands related to AWS Step Functions.
+    version         Print the Metaflow version
+#+end_src
+実行(run)のhelp
+メンバ変数のParameterも出力される
+#+begin_src bash
+  % python house_price.py run --help
+  Metaflow 2.5.0 executing RegModelFlow for user:yuyakaneta
+  Usage: house_price.py run [OPTIONS]
+
+    Run the workflow locally.
+
+  Options:
+    --config_file TEXT        config file  [default: ./configs/test.yaml]
+    --tag TEXT                Annotate this run with the given tag. You can
+                              specify this option multiple times to attach
+                              multiple tags in the run.
+    --max-workers INTEGER     Maximum number of parallel processes.  [default:
+                              16]
+    --max-num-splits INTEGER  Maximum number of splits allowed in a foreach.
+                              This is a safety check preventing bugs from
+                              triggering thousands of steps inadvertently.
+                              [default: 100]
+    --max-log-size INTEGER    Maximum size of stdout and stderr captured in
+                              megabytes. If a step outputs more than this to
+                              stdout/stderr, its output will be truncated.
+                              [default: 10]
+    --with TEXT               Add a decorator to all steps. You can specify this
+                              option multiple times to attach multiple
+                              decorators in steps.
+    --run-id-file TEXT        Write the ID of this run to the file specified.
+    --namespace TEXT          Change namespace from the default (your username)
+                              to the specified tag. Note that this option does
+                              not alter tags assigned to the objects produced by
+                              this run, just what existing objects are visible
+                              in the client API. You can enable the global
+                              namespace with an empty string.--namespace=
+    --help                    Show this message and exit.
+#+end_src
+** show
+DAGの依存関係を出力
+#+begin_src bash
+  % python house_price.py show
+  Metaflow 2.5.0 executing RegModelFlow for user:yuyakaneta
+
+
+
+  Step start
+      start step
+      metaflowは必ずstartという名前のメソッドから始まる
+      => load_data
+
+  Step load_data
+      データの取得step
+      => preprocess
+
+  Step preprocess
+      前処理step
+      今回することなさそう。通常NaNを埋めたり、正規化したり。
+      => split_data
+
+  Step split_data
+      データの分割step
+      => train, save_data
+
+  Step save_data
+      データの保存step
+      => join
+
+  Step train
+      学習step
+      => save_model
+
+  Step save_model
+      学習済みモデルの保存step
+      => join
+
+  Step join
+      flow結合step
+      end stepと結合のためのstepは同時に使えない
+      => end
+
+  Step end
+      end step
+      metaflowは必ずstartという名前のメソッドから始まる
+#+end_src
+** 実行
+#+begin_src bash
+  % python house_price.py run
+  Metaflow 2.5.0 executing RegModelFlow for user:yuyakaneta
+  Validating your flow...
+      The graph looks good!
+  Running pylint...
+      Pylint is happy!
+  2022-02-13 14:46:15.005 Workflow starting (run-id 1644731175002321):
+  2022-02-13 14:46:15.010 [1644731175002321/start/1 (pid 9320)] Task is starting.
+  2022-02-13 14:46:15.538 [1644731175002321/start/1 (pid 9320)] Task finished successfully.
+  2022-02-13 14:46:15.542 [1644731175002321/load_data/2 (pid 9323)] Task is starting.
+  2022-02-13 14:46:16.077 [1644731175002321/load_data/2 (pid 9323)] Task finished successfully.
+  2022-02-13 14:46:16.081 [1644731175002321/preprocess/3 (pid 9326)] Task is starting.
+  2022-02-13 14:46:16.608 [1644731175002321/preprocess/3 (pid 9326)] Task finished successfully.
+  2022-02-13 14:46:16.612 [1644731175002321/split_data/4 (pid 9329)] Task is starting.
+  2022-02-13 14:46:17.168 [1644731175002321/split_data/4 (pid 9329)] Task finished successfully.
+  2022-02-13 14:46:17.172 [1644731175002321/train/5 (pid 9332)] Task is starting.
+  2022-02-13 14:46:17.177 [1644731175002321/save_data/6 (pid 9333)] Task is starting.
+  2022-02-13 14:46:17.678 [1644731175002321/train/5 (pid 9332)] Training until validation scores don't improve for 100 rounds
+  2022-02-13 14:46:17.742 [1644731175002321/train/5 (pid 9332)] [10]      valid_0's rmse: 0.712702 valid_0's l2: 0.507944
+  2022-02-13 14:46:17.823 [1644731175002321/train/5 (pid 9332)] [20]      valid_0's rmse: 0.574105 valid_0's l2: 0.329597
+  2022-02-13 14:46:17.850 [1644731175002321/save_data/6 (pid 9333)] Task finished successfully.
+  2022-02-13 14:46:17.907 [1644731175002321/train/5 (pid 9332)] [30]      valid_0's rmse: 0.521403 valid_0's l2: 0.271861
+
+  ...(省略)
+
+  2022-02-13 14:46:20.844 [1644731175002321/train/5 (pid 9332)] [460]     valid_0's rmse: 0.44668 valid_0's l2: 0.199523
+  2022-02-13 14:46:20.911 [1644731175002321/train/5 (pid 9332)] [470]     valid_0's rmse: 0.446854 valid_0's l2: 0.199678
+  2022-02-13 14:46:20.925 [1644731175002321/train/5 (pid 9332)] Early stopping, best iteration is:
+  2022-02-13 14:46:20.966 [1644731175002321/train/5 (pid 9332)] [373]     valid_0's rmse: 0.445279 valid_0's l2: 0.198274
+  2022-02-13 14:46:20.966 [1644731175002321/train/5 (pid 9332)] MSE: 0.2098986478547095
+  2022-02-13 14:46:21.065 [1644731175002321/train/5 (pid 9332)] Task finished successfully.
+  2022-02-13 14:46:21.070 [1644731175002321/save_model/7 (pid 9342)] Task is starting.
+  2022-02-13 14:46:21.636 [1644731175002321/save_model/7 (pid 9342)] Task finished successfully.
+  2022-02-13 14:46:21.640 [1644731175002321/join/8 (pid 9345)] Task is starting.
+  2022-02-13 14:46:22.158 [1644731175002321/join/8 (pid 9345)] Task finished successfully.
+  2022-02-13 14:46:22.163 [1644731175002321/end/9 (pid 9348)] Task is starting.
+  2022-02-13 14:46:22.609 [1644731175002321/end/9 (pid 9348)] Done all process
+  2022-02-13 14:46:22.684 [1644731175002321/end/9 (pid 9348)] Task finished successfully.
+  2022-02-13 14:46:22.685 Done!
+#+end_src
+metaflowではデフォでログも一緒に出力される。
+他にも ~resume~ を使うことでフローの途中からも実行できる。
+** 実行結果の確認
+#+begin_src bash
+>>> from metaflow import Metaflow
+>>> mf = Metaflow()
+>>> print(Metaflow().flows)
+[Flow('RegModelFlow')]
+#+end_src
+
+#+begin_src bash
+>>> from metaflow import Flow
+>>> flow = Flow("RegModelFlow")
+>>> for run in flow:
+...     print(run)
+... 
+Run('RegModelFlow/1644731175002321')
+Run('RegModelFlow/1644730761169638')
+Run('RegModelFlow/1644730716188676')
+Run('RegModelFlow/1644730537333861')
+Run('RegModelFlow/1644730392121802')
+Run('RegModelFlow/1644730349530810')
+Run('RegModelFlow/1644730083934845')
+Run('RegModelFlow/1644730004024999')
+#+end_src
+
+#+begin_src bash
+>>> flow.latest_run
+Run('RegModelFlow/1644731175002321')
+>>> run = flow.latest_run
+>>> run
+Run('RegModelFlow/1644731175002321')
+>>> list(run)
+[Step('RegModelFlow/1644731175002321/end'), Step('RegModelFlow/1644731175002321/join'), Step('RegModelFlow/1644731175002321/save_model'), Step('RegModelFlow/1644731175002321/save_data'), Step('RegModelFlow/1644731175002321/train'), Step('RegModelFlow/1644731175002321/split_data'), Step('RegModelFlow/1644731175002321/preprocess'), Step('RegModelFlow/1644731175002321/load_data'), Step('RegModelFlow/1644731175002321/start')]
+>>> run["train"]
+Step('RegModelFlow/1644731175002321/train')
+>>> run["train"].task
+Task('RegModelFlow/1644731175002321/train/5')
+>>> run["train"].task.data
+<MetaflowData: conf, model, name, test_X, config_file, valid_y, y, X, valid_X, test_y, train_y, train_X>
+>>> run["train"].task.data.model
+LGBMRegressor(n_estimators=10000, objective='regression', random_state=147)
+>>> run["train"].task.data.test_y
+       MedHouseVal
+5006       1.23400
+2841       0.69800
+4056       5.00001
+13841      0.79900
+9606       0.75000
+...            ...
+19350      2.66700
+8294       4.39300
+5263       5.00001
+8636       5.00001
+883        2.54000
+
+[4128 rows x 1 columns]
+#+end_src
+こんな感じで実行結果にダイレクトにアクセスできる。

@@ -1,0 +1,50 @@
+seed: &seed 147
+
+data:
+  X:
+    data_name: data
+    columns_name: feature_names
+  y:
+    data_name: target
+    columns_name: target_names
+
+split_data:
+  train_test_split:
+    test_size: 0.2
+    random_state: *seed
+    shuffle: ture
+
+save_data:
+  train_X:
+    path_or_buf: ./data/train_X.csv
+    index: false
+  test_X:
+    path_or_buf: ./data/test_X.csv 
+    index: false
+  train_y:
+    path_or_buf: ./data/train_y.csv 
+    index: false
+  test_y:
+    path_or_buf: ./data/test_y.csv 
+    index: false
+
+train:
+  train_test_split:
+    test_size: 0.2
+    random_state: *seed
+    shuffle: ture
+  LGBMRegressor:
+    boosting_type: gbdt
+    objective: regression
+    random_state: *seed
+    n_estimators: 10000
+  early_stopping:
+    stopping_rounds: 100
+    verbose: true
+  log_evaluation:
+    period: 10
+  fit:
+    eval_metric: rmse
+
+save_model:
+  save_path: ./models/lgb_model.pkl
